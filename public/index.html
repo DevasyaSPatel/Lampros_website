@@ -1,0 +1,135 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ArbiLearn | Layer 2 Overview</title>
+    <meta name="description" content="Learn about Web3, Layer 2 scaling, and Arbitrum.">
+    <link rel="stylesheet" href="style.css">
+    <!-- Ethers.js for MetaMask -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/ethers/6.7.0/ethers.umd.min.js"></script>
+</head>
+<body>
+
+    <!-- Shared Navigation -->
+    <header>
+        <div class="container nav-container">
+            <div class="logo">
+                <span class="gradient-text">ArbiLearn</span>
+            </div>
+            <nav>
+                <ul class="nav-links">
+                    <li><a href="index.html" class="active">Home</a></li>
+                    <li><a href="concepts.html">Concepts</a></li>
+                    <li><a href="prices.html">Live Prices</a></li>
+                    <li><a href="simulator.html">Block Simulator</a></li>
+                    <li>
+                        <button id="connectWalletBtn" class="btn btn-secondary" style="padding: 0.5rem 1rem; font-size: 0.9rem;">Connect Wallet</button>
+                    </li>
+                </ul>
+            </nav>
+        </div>
+    </header>
+
+    <main>
+        <!-- Hero Section -->
+        <section class="hero-section container">
+            <span class="badge">Arbitrum Series</span>
+            <h1 class="gradient-text">Scaling Ethereum with Layer 2</h1>
+            <p class="mb-4">
+                Discover why Ethereum needed scaling, how Optimistic Rollups work, and why Arbitrum is fundamentally changing the landscape of Web3 development.
+            </p>
+            <a href="concepts.html" class="btn btn-primary">Explore Concepts</a>
+        </section>
+
+        <!-- Features Section -->
+        <section id="features" class="container mt-4">
+            <h2 class="text-center mb-4">Why Arbitrum?</h2>
+            <div class="grid grid-3">
+                <!-- Card 1 -->
+                <div class="card text-center">
+                    <div class="mb-2" style="font-size: 2.5rem;">🐢</div>
+                    <h3>Why L2 is Needed</h3>
+                    <p>Ethereum Mainnet (L1) became congested, leading to high gas fees and slow transactions. Layer 2 solutions were created to take computation off-chain while relying on L1 security.</p>
+                </div>
+                
+                <!-- Card 2 -->
+                <div class="card text-center">
+                    <div class="mb-2" style="font-size: 2.5rem;">⚙️</div>
+                    <h3>Optimistic Rollups</h3>
+                    <p>Arbitrum uses Optimistic Rollups to batch thousands of transactions off-chain and submit them to Ethereum as one single transaction. It assumes transactions are valid until proven otherwise.</p>
+                </div>
+
+                <!-- Card 3 -->
+                <div class="card text-center">
+                    <div class="mb-2" style="font-size: 2.5rem;">💸</div>
+                    <h3>10x Cheaper Txns</h3>
+                    <p>The real-world benefit: Users pay fractions of a cent on gas compared to mainnet. This enables micro-transactions, fast DeFi trading, and high-performance Web3 gaming.</p>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <!-- Shared Footer -->
+    <footer>
+        <div class="container footer-content">
+            <div>&copy; 2026 ArbiLearn. Built with ❤️ for Web3.</div>
+            <div>
+                <strong>Name:</strong> [Your Name] | <strong>Batch:</strong> Arbitrum Builder Pods 2
+            </div>
+            <div>
+                <a href="https://github.com/yourusername" target="_blank">GitHub</a>
+            </div>
+        </div>
+    </footer>
+
+    <!-- MetaMask Connection Script -->
+    <script>
+        const connectWalletBtn = document.getElementById('connectWalletBtn');
+        let provider, signer, userAddress;
+
+        async function connectWallet() {
+            if (typeof window.ethereum !== 'undefined') {
+                try {
+                    // Request account access
+                    const accounts = await window.ethereum.request({ method: 'eth_requestAccounts' });
+                    userAddress = accounts[0];
+                    
+                    // Setup ethers provider
+                    provider = new ethers.BrowserProvider(window.ethereum);
+                    signer = await provider.getSigner();
+                    
+                    // Fetch balance
+                    const balance = await provider.getBalance(userAddress);
+                    const formattedBalance = parseFloat(ethers.formatEther(balance)).toFixed(4);
+
+                    // Update UI
+                    connectWalletBtn.textContent = `${formattedBalance} ETH | ${userAddress.slice(0,6)}...${userAddress.slice(-4)}`;
+                    connectWalletBtn.classList.remove('btn-secondary');
+                    connectWalletBtn.classList.add('btn-primary');
+                } catch (error) {
+                    console.error("User denied account access or error occurred:", error);
+                    alert("Failed to connect MetaMask: " + error.message);
+                }
+            } else {
+                alert('MetaMask is not installed. Please install it to use Web3 features!');
+            }
+        }
+
+        connectWalletBtn.addEventListener('click', connectWallet);
+
+        // Listen for account changes
+        if (window.ethereum) {
+            window.ethereum.on('accountsChanged', (accounts) => {
+                if (accounts.length > 0) {
+                    connectWallet(); // Reconnect to update UI
+                } else {
+                    connectWalletBtn.textContent = 'Connect Wallet';
+                    connectWalletBtn.classList.remove('btn-primary');
+                    connectWalletBtn.classList.add('btn-secondary');
+                }
+            });
+        }
+    </script>
+</body>
+</html>

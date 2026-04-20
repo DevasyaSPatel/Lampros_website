@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}ArbiLearn | Layer 2 Overview{% endblock %}</title>
+    <meta name="description" content="Learn about Web3, Layer 2 scaling, and Arbitrum.">
+    <!-- Note: Flask serves static files from the /static directory by default -->
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    
+    <!-- Ethers.js for MetaMask -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/ethers/6.7.0/ethers.umd.min.js"></script>
+    
+    {% block head %}{% endblock %}
+</head>
+<body>
+
+    <!-- Common Navigation via Flask Include -->
+    {% include 'components/nav.html' %}
+
+    <main>
+        {% block content %}{% endblock %}
+    </main>
+
+    <!-- Common Footer via Flask Include -->
+    {% include 'components/footer.html' %}
+
+    <!-- Global MetaMask Connection Script -->
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const connectWalletBtn = document.getElementById('connectWalletBtn');
+            if(!connectWalletBtn) return; // Fail gracefully if button not found
+
+            let provider, signer, userAddress;
+
+            async function connectWallet() {
+                if (typeof window.ethereum !== 'undefined') {
+                    connectWalletBtn.textContent = 'Connecting...';
+                    try {
+                        // Request account access
+                        const accounts = await window.ethereum.request({ method: 'eth_requestAccounts' });
+                        userAddress = accounts[0];
+                        
+                        // Setup ethers provider
+                        provider = new ethers.BrowserProvider(window.ethereum);
+                        
+                        try {
+                            // Try to fetch balance
+                            const balance = await provider.getBalance(userAddress);
+                            const formattedBalance = parseFloat(ethers.formatEther(balance)).toFixed(4);
+
+                            // Update UI
+                            connectWalletBtn.textContent = `${formattedBalance} ETH | ${userAddress.slice(0,6)}...${userAddress.slice(-4)}`;
+                            connectWalletBtn.classList.remove('btn-secondary');
+                            connectWalletBtn.classList.add('btn-primary');
+                        } catch(bError) {
+                            console.error("Balance fetch error:", bError);
+                            connectWalletBtn.textContent = `0.000 ETH | ${userAddress.slice(0,6)}...`;
+                        }
+
+                    } catch (error) {
+                        console.error("User denied account access or error occurred:", error);
+                        alert("MetaMask connection failed: " + error.message);
+                        connectWalletBtn.textContent = 'Connect Wallet';
+                    }
+                } else {
+                    alert('MetaMask is not installed. Please install it to use Web3 features!');
+                    connectWalletBtn.textContent = 'Install MetaMask';
+                }
+            }
+
+            connectWalletBtn.addEventListener('click', connectWallet);
+
+            // Listen for account changes
+            if (window.ethereum) {
+                window.ethereum.on('accountsChanged', (accounts) => {
+                    if (accounts.length > 0) {
+                        connectWallet(); // Reconnect to update UI
+                    } else {
+                        connectWalletBtn.textContent = 'Connect Wallet';
+                        connectWalletBtn.classList.remove('btn-primary');
+                        connectWalletBtn.classList.add('btn-secondary');
+                    }
+                });
+            }
+        });
+    </script>
+    
+    {% block scripts %}{% endblock %}
+</body>
+</html>

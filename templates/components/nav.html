@@ -1,0 +1,19 @@
+<header>
+    <div class="container nav-container">
+        <div class="logo">
+            <span class="gradient-text">ArbiLearn</span>
+        </div>
+        <nav>
+            <ul class="nav-links">
+                <!-- Using Flask Request Path to determine active class -->
+                <li><a href="/" class="{% if request.path == '/' %}active{% endif %}">Home</a></li>
+                <li><a href="/concepts" class="{% if request.path == '/concepts' %}active{% endif %}">Concepts</a></li>
+                <li><a href="/prices" class="{% if request.path == '/prices' %}active{% endif %}">Live Prices</a></li>
+                <li><a href="/simulator" class="{% if request.path == '/simulator' %}active{% endif %}">Block Simulator</a></li>
+                <li>
+                    <button id="connectWalletBtn" class="btn btn-secondary" style="padding: 0.5rem 1rem; font-size: 0.9rem;">Connect Wallet</button>
+                </li>
+            </ul>
+        </nav>
+    </div>
+</header>

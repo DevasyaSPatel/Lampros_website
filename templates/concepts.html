@@ -1,0 +1,114 @@
+{% extends "base.html" %}
+
+{% block title %}ArbiLearn | Core Concepts{% endblock %}
+
+{% block content %}
+<div class="container mb-4">
+    <div class="mb-4 text-center">
+        <h1 class="gradient-text">Core Web3 Concepts</h1>
+        <p>Visual comparisons to help you grasp the foundational ideas of the decentralized web.</p>
+    </div>
+
+    <div class="grid grid-2">
+        <!-- Concept 1: Web2 vs Web3 -->
+        <div class="card concept-card">
+            <h3>🌐 Web2 vs Web3</h3>
+            <div class="concept-split">
+                <div class="concept-side side-a">
+                    <strong>Web2 (Read / Write)</strong>
+                    <ul>
+                        <li>Centralized servers (Big Tech)</li>
+                        <li>Users are the product (data harvesting)</li>
+                        <li>Censorship is easy</li>
+                        <li>Accounts via email/passwords</li>
+                    </ul>
+                </div>
+                <div class="concept-side side-b">
+                    <strong>Web3 (Read / Write / Own)</strong>
+                    <ul>
+                        <li>Decentralized networks (Blockchain)</li>
+                        <li>Users own their data & assets</li>
+                        <li>Censorship resistant</li>
+                        <li>Accounts via crypto wallets</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+
+        <!-- Concept 2: Ethereum vs Bitcoin -->
+        <div class="card concept-card">
+            <h3>🪙 Ethereum vs Bitcoin</h3>
+            <div class="concept-split">
+                <div class="concept-side side-a">
+                    <strong>Bitcoin (Digital Gold)</strong>
+                    <ul>
+                        <li>First generation blockchain</li>
+                        <li>Primary use: Store of value / Money</li>
+                        <li>No smart contracts natively</li>
+                        <li>Proof of Work (energy intensive)</li>
+                    </ul>
+                </div>
+                <div class="concept-side side-b">
+                    <strong>Ethereum (World Computer)</strong>
+                    <ul>
+                        <li>Second generation blockchain</li>
+                        <li>Primary use: Decentralized Apps (dApps)</li>
+                        <li>Rich smart contract capability</li>
+                        <li>Proof of Stake (energy efficient)</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+
+        <!-- Concept 3: Public Key vs Private Key -->
+        <div class="card concept-card">
+            <h3>🔑 Public Key vs Private Key</h3>
+            <div class="concept-split">
+                <div class="concept-side side-a">
+                    <strong>Public Key (Address)</strong>
+                    <ul>
+                        <li>Like your bank account number</li>
+                        <li>Safe to share with anyone</li>
+                        <li>Used to receive funds</li>
+                        <li>Visible on public ledgers</li>
+                    </ul>
+                </div>
+                <div class="concept-side side-b">
+                    <strong>Private Key (Secret)</strong>
+                    <ul>
+                        <li>Like your ATM PIN / Password</li>
+                        <li>NEVER share this with anyone</li>
+                        <li>Used to authorize/send transactions</li>
+                        <li>He who owns the key, owns the coins</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+
+        <!-- Concept 4: Blockchain vs Traditional Databases -->
+        <div class="card concept-card">
+            <h3>🗄️ Blockchain vs Traditional Databases</h3>
+            <div class="concept-split">
+                <div class="concept-side side-a">
+                    <strong>Traditional DB (SQL, Mongo)</strong>
+                    <ul>
+                        <li>Controlled by a single admin/entity</li>
+                        <li>Data can be edited or deleted (CRUD)</li>
+                        <li>Client-Server architecture</li>
+                        <li>Very fast and highly scalable natively</li>
+                    </ul>
+                </div>
+                <div class="concept-side side-b">
+                    <strong>Blockchain (Ledger)</strong>
+                    <ul>
+                        <li>Consensus-driven across many nodes</li>
+                        <li>Append-only; immutable once written</li>
+                        <li>Peer-to-Peer architecture</li>
+                        <li>Slower; requires Layer 2s to scale</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

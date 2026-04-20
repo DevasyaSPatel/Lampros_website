@@ -1,0 +1,123 @@
+Build me a complete 4-page Web3 website as a single cohesive project. All pages must share the same navigation bar, color palette, fonts, and spacing. The active page should be visually highlighted in the nav.
+
+---
+
+## THEME
+Use the "Arbitrum / Layer 2 Overview" theme throughout the entire site. The color palette should feel modern and Web3-native — dark backgrounds, purple/blue accents, clean sans-serif fonts.
+
+---
+
+## TECH STACK
+HTML + CSS + Vanilla JavaScript (no frameworks needed). All four pages in one repository. Fully responsive and mobile-friendly.
+
+---
+
+## PAGE 1 — Home / Landing (index.html)
+
+Build a responsive landing page with these sections:
+
+1. **Header / Nav** — Site logo ("ArbiLearn" or similar), nav links to all 4 pages (Home, Concepts, Live Prices, Block Simulator). Highlight the active page.
+
+2. **Hero Section** — Bold headline introducing Arbitrum/Layer 2. Short 2–3 line description. A CTA button ("Explore Concepts" linking to Page 2).
+
+3. **Features Section** — At least 3 cards with icons explaining:
+   - Why Ethereum needed Layer 2 solutions (high gas fees, slow TPS)
+   - What Arbitrum is and how it works (Optimistic Rollups)
+   - One real-world benefit of Arbitrum over Ethereum mainnet (e.g., 10x cheaper transactions)
+
+4. **Footer** — Your name, GitHub link, batch name ("Arbitrum Builder Pods 2").
+
+---
+
+## PAGE 2 — Concepts (concepts.html)
+
+Build a visual comparison page using cards or side-by-side tables for each of these 4 concepts. No plain paragraphs — every concept must be a visual card or two-column layout. Write explanations in simple, clear language.
+
+Concepts to cover:
+1. Web2 vs Web3
+2. Ethereum vs Bitcoin
+3. Public Key vs Private Key
+4. Blockchain vs Traditional Databases
+
+Each card should have: a title, two clearly labeled sides, 3–4 bullet points per side, and a subtle icon or emoji for visual interest.
+
+---
+
+## PAGE 3 — Live Prices (prices.html)
+
+Build a live crypto price dashboard. Fetch real-time data from the CoinGecko public API (no API key needed).
+
+**API endpoint:**
+https://api.coingecko.com/api/v3/simple/price?ids=ethereum,bitcoin,solana,matic-network&vs_currencies=usd&include_24hr_change=true
+
+**Requirements:**
+- Display cards for ETH, BTC, SOL, and MATIC
+- Each card shows: coin name, current price in USD, 24h change %
+- Green ▲ arrow if 24h change is positive, Red ▼ if negative
+- A "Refresh" button that re-fetches live data on click
+- Show a loading state while fetching
+- Handle fetch errors gracefully (show an error message)
+
+---
+
+## PAGE 4 — Block Simulator (simulator.html)
+
+Build an interactive blockchain mining simulator using pure JavaScript and the Web Crypto API (SHA-256). No external libraries.
+
+**What to build:**
+
+**Block 1:**
+- Input field: Block Data (text)
+- Display: Previous Hash = "0000000000000000" (hardcoded genesis)
+- Display: Nonce (auto-incremented)
+- "Mine Block" button — increments nonce until SHA-256 hash starts with "00" (proof-of-work simulation)
+- Display the resulting hash
+- Show "✅ Block Valid" in green when mined
+
+**Block 2:**
+- Automatically reads Block 1's hash as its Previous Hash
+- Has its own Block Data input field
+- Has its own "Mine Block" button with the same proof-of-work logic
+- If Block 1's data changes after mining, Block 2 should turn "❌ Block Invalid" in red automatically
+
+**Key behavior:** Changing Block 1's data after it has been mined must immediately invalidate Block 2 — this demonstrates blockchain immutability.
+
+Use the Web Crypto API like this for hashing:
+async function sha256(message) {
+  const msgBuffer = new TextEncoder().encode(message);
+  const hashBuffer = await crypto.subtle.digest('SHA-256', msgBuffer);
+  const hashArray = Array.from(new Uint8Array(hashBuffer));
+  return hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
+}
+
+---
+
+## NAVIGATION REQUIREMENTS (applies to ALL pages)
+- Same header/nav bar on every page
+- Links: Home | Concepts | Live Prices | Block Simulator
+- Active page link is visually highlighted (e.g., underline or different color)
+- Consistent dark theme, same font (e.g., Inter or Space Grotesk from Google Fonts), same spacing
+
+---
+
+## FILE STRUCTURE
+/project-root
+index.html         ← Page 1: Home
+concepts.html      ← Page 2: Concepts
+prices.html        ← Page 3: Live Prices
+simulator.html     ← Page 4: Block Simulator
+style.css          ← Shared stylesheet for all pages
+README.md          ← Project description, pages list, how to run
+
+---
+
+## README.md
+Include:
+- Project name and short description
+- List of all 4 pages and what each does
+- How to run locally (just open index.html in a browser — no build step)
+- Any known issues or future improvements
+
+---
+
+Build the entire project now, starting with style.css and index.html, then the remaining pages in order.

@@ -1,0 +1,241 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ArbiLearn | Block Simulator</title>
+    <meta name="description" content="Interactive blockchain mining simulator.">
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+    <!-- Shared Navigation -->
+    <header>
+        <div class="container nav-container">
+            <div class="logo">
+                <span class="gradient-text">ArbiLearn</span>
+            </div>
+            <nav>
+                <ul class="nav-links">
+                    <li><a href="index.html">Home</a></li>
+                    <li><a href="concepts.html">Concepts</a></li>
+                    <li><a href="prices.html">Live Prices</a></li>
+                    <li><a href="simulator.html" class="active">Block Simulator</a></li>
+                </ul>
+            </nav>
+        </div>
+    </header>
+
+    <main class="container">
+        <div class="mb-4 text-center">
+            <h1 class="gradient-text">Blockchain Simulator</h1>
+            <p>Understand Proof-of-Work, nonces, and chain immutability. Try changing Block 1 after mining!</p>
+        </div>
+
+        <div class="block-visualizer">
+            
+            <!-- Block 1 -->
+            <div class="card block-box" id="block1">
+                <h3>📦 Block 1 (Genesis)</h3>
+                <div class="form-group mt-4">
+                    <label>Previous Hash:</label>
+                    <input type="text" id="prevHash1" class="form-control" value="0000000000000000" disabled>
+                </div>
+                <div class="form-group">
+                    <label>Block Data:</label>
+                    <textarea id="data1" class="form-control" rows="3" placeholder="Enter transaction data here..."></textarea>
+                </div>
+                <div class="form-group">
+                    <label>Nonce:</label>
+                    <input type="number" id="nonce1" class="form-control" value="0" disabled>
+                </div>
+                
+                <button class="btn btn-primary" id="mineBtn1">🔨 Mine Block 1</button>
+                
+                <div class="hash-output" id="hashOutput1">Hash: Not mined yet</div>
+                <div class="validity-indicator" id="status1" style="display: none;"></div>
+            </div>
+
+            <!-- Chain Link -->
+            <div class="chain-link"></div>
+
+            <!-- Block 2 -->
+            <div class="card block-box" id="block2">
+                <h3>📦 Block 2</h3>
+                <div class="form-group mt-4">
+                    <label>Previous Hash:</label>
+                    <input type="text" id="prevHash2" class="form-control" value="" disabled>
+                </div>
+                <div class="form-group">
+                    <label>Block Data:</label>
+                    <textarea id="data2" class="form-control" rows="3" placeholder="Enter transaction data here..."></textarea>
+                </div>
+                <div class="form-group">
+                    <label>Nonce:</label>
+                    <input type="number" id="nonce2" class="form-control" value="0" disabled>
+                </div>
+                
+                <button class="btn btn-primary" id="mineBtn2" disabled>🔨 Mine Block 2</button>
+                
+                <div class="hash-output" id="hashOutput2">Hash: Not mined yet</div>
+                <div class="validity-indicator" id="status2" style="display: none;"></div>
+            </div>
+
+        </div>
+    </main>
+
+    <!-- Shared Footer -->
+    <footer>
+        <div class="container footer-content">
+            <div>&copy; 2026 ArbiLearn. Built with ❤️ for Web3.</div>
+            <div>
+                <strong>Name:</strong> [Your Name] | <strong>Batch:</strong> Arbitrum Builder Pods 2
+            </div>
+            <div>
+                <a href="https://github.com/yourusername" target="_blank">GitHub</a>
+            </div>
+        </div>
+    </footer>
+
+    <script>
+        // SHA-256 Helper
+        async function sha256(message) {
+            const msgBuffer = new TextEncoder().encode(message);
+            const hashBuffer = await crypto.subtle.digest('SHA-256', msgBuffer);
+            const hashArray = Array.from(new Uint8Array(hashBuffer));
+            return hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
+        }
+
+        // DOM Elements
+        const data1 = document.getElementById('data1');
+        const prevHash1 = document.getElementById('prevHash1');
+        const nonce1 = document.getElementById('nonce1');
+        const mineBtn1 = document.getElementById('mineBtn1');
+        const hashOutput1 = document.getElementById('hashOutput1');
+        const status1 = document.getElementById('status1');
+
+        const data2 = document.getElementById('data2');
+        const prevHash2 = document.getElementById('prevHash2');
+        const nonce2 = document.getElementById('nonce2');
+        const mineBtn2 = document.getElementById('mineBtn2');
+        const hashOutput2 = document.getElementById('hashOutput2');
+        const status2 = document.getElementById('status2');
+
+        // State
+        let block1State = { minedStr: null, hash: null };
+        let block2State = { minedStr: null, hash: null };
+
+        async function computeBlockHash(prevHash, data, nonce) {
+            return await sha256(prevHash + data + nonce);
+        }
+
+        async function mineBlock(prevHash, data, nonceInput, hashElem, statusElem) {
+            let nonce = 0;
+            let currentHash = "";
+            let startTime = Date.now();
+            
+            // UI Update
+            statusElem.style.display = 'none';
+            hashElem.textContent = "Mining...";
+
+            // Simulate proof of work finding a hash that starts with "00"
+            // Using a loop. To prevent blocking UI completely for long periods, 
+            // we could chunk it, but for a "00" prefix it's usually very fast (256/1 = 256 avg tries).
+            while (true) {
+                currentHash = await computeBlockHash(prevHash, data, nonce);
+                if (currentHash.startsWith('00')) {
+                    break;
+                }
+                nonce++;
+                
+                // Break infinite loop safety
+                if(Date.now() - startTime > 10000) {
+                    alert("Mining timeout. Please try again.");
+                    return null;
+                }
+            }
+
+            nonceInput.value = nonce;
+            hashElem.textContent = `Hash: ${currentHash}`;
+            
+            statusElem.textContent = "✅ Block Valid";
+            statusElem.className = "validity-indicator valid";
+            statusElem.style.display = 'inline-flex';
+
+            return { hash: currentHash, nonce: nonce, originStr: prevHash + data };
+        }
+
+        // Mine Block 1 Event
+        mineBtn1.addEventListener('click', async () => {
+            const result = await mineBlock(prevHash1.value, data1.value, nonce1, hashOutput1, status1);
+            if(result) {
+                block1State.hash = result.hash;
+                block1State.minedStr = prevHash1.value + data1.value;
+                
+                // Propagate to Block 2
+                prevHash2.value = result.hash;
+                mineBtn2.disabled = false;
+                
+                // Invalidate block 2 if it was previously mined
+                checkBlock2Validity();
+            }
+        });
+
+        // Mine Block 2 Event
+        mineBtn2.addEventListener('click', async () => {
+            const result = await mineBlock(prevHash2.value, data2.value, nonce2, hashOutput2, status2);
+            if(result) {
+                block2State.hash = result.hash;
+                block2State.minedStr = prevHash2.value + data2.value;
+            }
+        });
+
+        // Immutability Check - when Block 1 data changes
+        data1.addEventListener('input', async () => {
+            if (block1State.hash) {
+                // Determine if data has drifted from what it was when mined
+                const currentStr = prevHash1.value + data1.value;
+                if (currentStr !== block1State.minedStr) {
+                    status1.textContent = "❌ Block Invalid";
+                    status1.className = "validity-indicator invalid";
+                    
+                    // The hash changes immediately when data changes
+                    const newHash = await computeBlockHash(prevHash1.value, data1.value, nonce1.value);
+                    hashOutput1.textContent = `Hash: ${newHash}`;
+                    
+                    // Propagate invalidation to Block 2
+                    prevHash2.value = newHash;
+                } else {
+                    status1.textContent = "✅ Block Valid";
+                    status1.className = "validity-indicator valid";
+                    hashOutput1.textContent = `Hash: ${block1State.hash}`;
+                    prevHash2.value = block1State.hash;
+                }
+                checkBlock2Validity();
+            }
+        });
+
+        // Block 2 Data change check
+        data2.addEventListener('input', async () => {
+            checkBlock2Validity();
+        });
+
+        async function checkBlock2Validity() {
+            if (block2State.hash) {
+                const currentStr = prevHash2.value + data2.value;
+                if (currentStr !== block2State.minedStr) {
+                    status2.textContent = "❌ Block Invalid!";
+                    status2.className = "validity-indicator invalid";
+                    
+                    const newHash = await computeBlockHash(prevHash2.value, data2.value, parseInt(nonce2.value));
+                    hashOutput2.textContent = `Hash: ${newHash}`;
+                } else {
+                    status2.textContent = "✅ Block Valid";
+                    status2.className = "validity-indicator valid";
+                    hashOutput2.textContent = `Hash: ${block2State.hash}`;
+                }
+            }
+        }
+    </script>
+</body>
+</html>

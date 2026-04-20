@@ -1,0 +1,245 @@
+{% extends "base.html" %}
+
+{% block title %}ArbiLearn | Block Simulator{% endblock %}
+
+{% block head %}
+<style>
+    /* Styling to match Anders Brownworth Blockchain Demo feel */
+    .blockchain-container {
+        display: flex;
+        flex-direction: column; /* Or row if screen is wide enough, but column is safer */
+        gap: 2rem;
+        align-items: center;
+        max-width: 800px;
+        margin: 0 auto;
+    }
+
+    .demo-block {
+        width: 100%;
+        background-color: var(--bg-card);
+        border: 2px solid rgba(255, 255, 255, 0.1);
+        border-radius: var(--radius-md);
+        padding: 1.5rem;
+        transition: background-color 0.3s ease, border-color 0.3s ease;
+    }
+
+    /* Valid state */
+    .demo-block.valid {
+        background-color: rgba(46, 204, 113, 0.15); /* Light Green tint */
+        border-color: var(--success-green);
+    }
+
+    /* Invalid state */
+    .demo-block.invalid {
+        background-color: rgba(231, 76, 60, 0.15); /* Light Red tint */
+        border-color: var(--error-red);
+    }
+
+    .form-row {
+        display: flex;
+        align-items: center;
+        margin-bottom: 1rem;
+    }
+
+    .form-row label {
+        width: 120px;
+        font-weight: 600;
+        color: var(--text-secondary);
+    }
+
+    .form-row input, .form-row textarea {
+        flex: 1;
+        padding: 0.5rem 0.75rem;
+        background-color: rgba(0,0,0,0.3);
+        border: 1px solid rgba(255,255,255,0.2);
+        border-radius: 4px;
+        color: var(--text-primary);
+        font-family: monospace;
+        font-size: 1rem;
+    }
+
+    .form-row input:focus, .form-row textarea:focus {
+        outline: none;
+        border-color: var(--arbitrum-blue);
+    }
+
+    .hash-display {
+        font-family: monospace;
+        font-size: 0.9rem;
+        word-break: break-all;
+    }
+
+    .mine-area {
+        display: flex;
+        justify-content: flex-end;
+        margin-top: 1rem;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container mb-4 text-center">
+    <h1 class="gradient-text">Blockchain Simulator</h1>
+    <p>A distributed ledger is just a chain of cryptographically linked blocks. <br/> Try breaking the chain by changing Block 1's data, then re-mine it!</p>
+</div>
+
+<div class="container blockchain-container" id="chain-container">
+    <!-- Blockchain gets injected here dynamically -->
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+    // SHA-256 Helper (Web Crypto API)
+    async function sha256(message) {
+        const msgBuffer = new TextEncoder().encode(message);
+        const hashBuffer = await crypto.subtle.digest('SHA-256', msgBuffer);
+        const hashArray = Array.from(new Uint8Array(hashBuffer));
+        return hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
+    }
+
+    // Number of leading zeros required for difficulty
+    const DIFFICULTY_PREFIX = "0000";
+
+    // App State - Array of objects representing blocks
+    let blockchain = [
+        { blockNum: 1, nonce: 11316, data: "", prev: "0000000000000000000000000000000000000000000000000000000000000000", hash: "" },
+        { blockNum: 2, nonce: 35230, data: "", prev: "", hash: "" },
+        { blockNum: 3, nonce: 12937, data: "", prev: "", hash: "" }
+    ];
+
+    const container = document.getElementById('chain-container');
+
+    // UI Initializer
+    function renderChain() {
+        container.innerHTML = "";
+        blockchain.forEach((block, index) => {
+            const blockEl = document.createElement('div');
+            blockEl.className = 'demo-block'; // Base class, valid/invalid added later
+            blockEl.id = `block-${index}`;
+
+            blockEl.innerHTML = `
+                <div class="form-row">
+                    <label>Block:</label>
+                    <input type="number" id="blockNum-${index}" value="${block.blockNum}" oninput="updateBlock(${index}, 'blockNum', this.value)">
+                </div>
+                <div class="form-row">
+                    <label>Nonce:</label>
+                    <input type="number" id="nonce-${index}" value="${block.nonce}" oninput="updateBlock(${index}, 'nonce', this.value)">
+                </div>
+                <div class="form-row">
+                    <label>Data:</label>
+                    <textarea rows="3" id="data-${index}" oninput="updateBlock(${index}, 'data', this.value)">${block.data}</textarea>
+                </div>
+                <div class="form-row">
+                    <label>Prev:</label>
+                    <input type="text" id="prev-${index}" value="${block.prev}" disabled style="background-color: rgba(0,0,0,0.5);">
+                </div>
+                <div class="form-row">
+                    <label>Hash:</label>
+                    <input type="text" id="hash-${index}" class="hash-display" value="${block.hash}" disabled style="background-color: rgba(0,0,0,0.5);">
+                </div>
+                <div class="mine-area">
+                    <button class="btn btn-primary" id="mineBtn-${index}" onclick="mineBlock(${index})">Mine</button>
+                    <span id="mining-status-${index}" style="margin-left:1rem;color:var(--text-secondary);display:none;align-items:center;">Mining...</span>
+                </div>
+            `;
+            container.appendChild(blockEl);
+        });
+    }
+
+    // Hash Calculation
+    async function calculateHashForBlock(index) {
+        const blk = blockchain[index];
+        // Concatenate data like Anders Demo: blockNum + nonce + data + prev
+        const strToHash = blk.blockNum.toString() + blk.nonce.toString() + blk.data + blk.prev;
+        return await sha256(strToHash);
+    }
+
+    async function evaluateChain() {
+        for (let i = 0; i < blockchain.length; i++) {
+            // If it's not the genesis block, it MUST take the prev block's CURRENT hash.
+            if (i > 0) {
+                blockchain[i].prev = blockchain[i-1].hash;
+                document.getElementById(`prev-${i}`).value = blockchain[i].prev;
+            }
+
+            // Recalculate hash for the current block given its state
+            blockchain[i].hash = await calculateHashForBlock(i);
+            const hashInput = document.getElementById(`hash-${i}`);
+            hashInput.value = blockchain[i].hash;
+
+            // Apply Coloring
+            const blockUI = document.getElementById(`block-${i}`);
+            if (blockchain[i].hash.startsWith(DIFFICULTY_PREFIX)) {
+                blockUI.classList.remove('invalid');
+                blockUI.classList.add('valid');
+            } else {
+                blockUI.classList.remove('valid');
+                blockUI.classList.add('invalid');
+            }
+        }
+    }
+
+    // Event Handler for input typing
+    async function updateBlock(index, field, value) {
+        blockchain[index][field] = value;
+        await evaluateChain(); // Ripple effect down the chain!
+    }
+
+    // Proof of Work
+    async function mineBlock(index) {
+        const btn = document.getElementById(`mineBtn-${index}`);
+        const status = document.getElementById(`mining-status-${index}`);
+        
+        btn.disabled = true;
+        status.style.display = "inline-flex";
+
+        let currentNonce = 0;
+        let currentHash = "";
+
+        const blk = blockchain[index];
+        const baseStr = blk.blockNum.toString() + "_" + blk.data + "_" + blk.prev; // underscore to separate conceptually
+        
+        // Use a timeout trick to unblock UI thread occasionally so "Mining..." text actually renders
+        const mineLoop = async () => {
+             let iterations = 0;
+             while(iterations < 50000) { // Check batches to yield to UI
+                const strToHash = blk.blockNum.toString() + currentNonce.toString() + blk.data + blk.prev;
+                currentHash = await sha256(strToHash);
+                
+                if (currentHash.startsWith(DIFFICULTY_PREFIX)) {
+                    // Mined!
+                    break;
+                }
+                currentNonce++;
+                iterations++;
+             }
+
+             if (!currentHash.startsWith(DIFFICULTY_PREFIX)) {
+                // Yield to UI, schedule next batch
+                setTimeout(mineLoop, 0);
+             } else {
+                // Finished!
+                blockchain[index].nonce = currentNonce;
+                document.getElementById(`nonce-${index}`).value = currentNonce;
+                
+                btn.disabled = false;
+                status.style.display = "none";
+                
+                await evaluateChain(); // Updates hash and cascades!
+             }
+        };
+
+        // Start async loop
+        setTimeout(mineLoop, 0);
+    }
+
+    // Initialize UI on load and run first evaluate to set genesis hashes
+    window.addEventListener('load', async () => {
+        renderChain();
+        await evaluateChain();
+    });
+
+</script>
+{% endblock %}

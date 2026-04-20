@@ -1,0 +1,138 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ArbiLearn | Live Prices</title>
+    <meta name="description" content="Live Crypto Prices Dashboard for ETH, BTC, SOL, and MATIC.">
+    <link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+
+    <!-- Shared Navigation -->
+    <header>
+        <div class="container nav-container">
+            <div class="logo">
+                <span class="gradient-text">ArbiLearn</span>
+            </div>
+            <nav>
+                <ul class="nav-links">
+                    <li><a href="index.html">Home</a></li>
+                    <li><a href="concepts.html">Concepts</a></li>
+                    <li><a href="prices.html" class="active">Live Prices</a></li>
+                    <li><a href="simulator.html">Block Simulator</a></li>
+                </ul>
+            </nav>
+        </div>
+    </header>
+
+    <main class="container">
+        <div class="mb-4 text-center">
+            <h1 class="gradient-text">Live Price Dashboard</h1>
+            <p>Real-time data fetched directly from the CoinGecko API.</p>
+            <button id="refreshBtn" class="btn btn-primary mt-2">🔄 Refresh Prices</button>
+            <div id="statusMessage" class="mt-2" style="font-weight: 500; color: var(--text-secondary);"></div>
+        </div>
+
+        <div class="grid grid-3" id="priceGrid">
+            <!-- Price cards will be dynamically injected here -->
+        </div>
+    </main>
+
+    <!-- Shared Footer -->
+    <footer>
+        <div class="container footer-content">
+            <div>&copy; 2026 ArbiLearn. Built with ❤️ for Web3.</div>
+            <div>
+                <strong>Name:</strong> Devasya Patel | <strong>Batch:</strong> Arbitrum Builder Pods 2
+            </div>
+            <div>
+                <a href="https://github.com/DevasyaSPatel" target="_blank">GitHub</a>
+            </div>
+        </div>
+    </footer>
+
+    <script>
+        const API_URL = '/api/prices';
+
+        const priceGrid = document.getElementById('priceGrid');
+        const refreshBtn = document.getElementById('refreshBtn');
+        const statusMessage = document.getElementById('statusMessage');
+
+        const coinMap = {
+            'bitcoin': { symbol: 'BTC', name: 'Bitcoin', icon: '₿' },
+            'ethereum': { symbol: 'ETH', name: 'Ethereum', icon: '⧫' },
+            'solana': { symbol: 'SOL', name: 'Solana', icon: '◎' },
+            'matic-network': { symbol: 'MATIC', name: 'Polygon', icon: '🟣' }
+        };
+
+        function formatCurrency(num) {
+            return new Intl.NumberFormat('en-US', {
+                style: 'currency',
+                currency: 'USD'
+            }).format(num);
+        }
+
+        async function fetchPrices() {
+            statusMessage.textContent = "Loading live data...";
+            statusMessage.style.color = "var(--text-secondary)";
+            priceGrid.innerHTML = ''; // Clear grid
+
+            try {
+                const response = await fetch(API_URL);
+                if (!response.ok) {
+                    throw new Error('API request failed');
+                }
+                const data = await response.json();
+
+                statusMessage.textContent = `Last updated: ${new Date().toLocaleTimeString()}`;
+                statusMessage.style.color = "var(--success-green)";
+                renderCards(data);
+
+            } catch (error) {
+                console.error("Error fetching prices:", error);
+                statusMessage.textContent = "Error fetching live prices. Please try again later.";
+                statusMessage.style.color = "var(--error-red)";
+            }
+        }
+
+        function renderCards(data) {
+            // Sort by specific order if desired, or iterate over the fetched data keys
+            const coinIds = ['bitcoin', 'ethereum', 'solana', 'matic-network'];
+
+            coinIds.forEach(id => {
+                if (data[id]) {
+                    const price = data[id].usd;
+                    const change24h = data[id].usd_24h_change;
+                    const meta = coinMap[id];
+
+                    const isPositive = change24h >= 0;
+                    const arrow = isPositive ? '▲' : '▼';
+                    const changeColorClass = isPositive ? 'change-up' : 'change-down';
+
+                    const cardHtml = `
+                        <div class="card price-card">
+                            <div class="coin-icon">${meta.icon}</div>
+                            <h3>${meta.name} (${meta.symbol})</h3>
+                            <div class="coin-price">${formatCurrency(price)}</div>
+                            <div class="coin-change ${changeColorClass}">
+                                ${arrow} ${Math.abs(change24h).toFixed(2)}%
+                            </div>
+                        </div>
+                    `;
+                    priceGrid.insertAdjacentHTML('beforeend', cardHtml);
+                }
+            });
+        }
+
+        // Fetch on initial load
+        fetchPrices();
+
+        // Bind refresh button
+        refreshBtn.addEventListener('click', fetchPrices);
+    </script>
+</body>
+
+</html>
