@@ -9,15 +9,19 @@ Following architectural upgrades, the project is structured as a **Full-Stack Ap
 This cohesive website includes four individual HTML pages linked together via a centralized Jinja2 `base.html` template:
 
 1. **Home / Landing (`/`)**
+   ![alt text](image.png)
    Introduces the need for Layer 2 scaling, Optimistic Rollups, and the real-world benefits of using Arbitrum over Ethereum Mainnet. Connect your MetaMask Vault directly from the navigation bar on this page.
 
 2. **Concepts (`/concepts`)**
+   ![alt text](image-1.png)
    Visual layout (card-based comparisons) explaining the difference between Web2 vs Web3, Ethereum vs Bitcoin, Public vs Private Keys, and Blockchains vs Traditional Databases.
 
 3. **Live Prices (`/prices`)**
+   ![alt text](image-2.png)
    A dynamic dashboard using a server-side Python proxy to fetch and render live prices for BTC, ETH, SOL, and MATIC via CoinGecko. The Python backend resolves browser CORS issues and handles endpoint Rate-limiting gracefully with cached fallbacks.
 
 4. **Block Simulator (`/simulator`)**
+   ![alt text](image-3.png)
    An interactive proof-of-work simulator visually mirroring the famous Anders Brownworth demo. It features sequential blocks dynamically altering their cryptographic SHA-256 hashes based on Nonce iteration and Data changes. 
 
 ## How to Install & Run Locally
